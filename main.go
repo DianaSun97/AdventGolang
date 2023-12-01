@@ -6,8 +6,30 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	//"github.com/your-custom-path/common"
 )
+
+func main() {
+	// Assuming you have a ReadInputFile function in your main package
+	fileContent, err := ReadInputFile()
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	lines := strings.Split(strings.Trim(fileContent, " "), "\n")
+	data := RemoveEmptyStrings(lines)
+
+	totalChecksum, err := ComputeTotalChecksum(data)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	fmt.Println("Total Checksum:", totalChecksum)
+}
+func ReadInputFile() (string, error) {
+	return "", nil
+}
+func RemoveEmptyStrings(lines []string) []string {
+	return lines
+}
 
 func calculateChecksum(chars []string) int {
 	digits := []int{}
@@ -40,21 +62,4 @@ func ComputeTotalChecksum(input []string) (int, error) {
 	log.Println("Checksum computation took:", time.Since(startTime))
 
 	return checksum, nil
-}
-
-func main() {
-	fileContent, err := common.ReadInputFile()
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	lines := strings.Split(strings.Trim(fileContent, " "), "\n")
-	data := common.RemoveEmptyStrings(lines)
-
-	totalChecksum, err := ComputeTotalChecksum(data)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	fmt.Println("Total Checksum:", totalChecksum)
 }
