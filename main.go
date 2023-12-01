@@ -18,7 +18,7 @@ func main() {
 	lines := strings.Split(strings.Trim(fileContent, " "), "\n")
 	data := RemoveEmptyStrings(lines)
 
-	totalChecksum, err := ComputeTotalChecksum(data)
+	totalChecksum, err := TotalChecksum(data)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -45,7 +45,7 @@ func calculateChecksum(chars []string) int {
 	return firstDigit*10 + lastDigit
 }
 
-func ComputeTotalChecksum(input []string) (int, error) {
+func TotalChecksum(input []string) (int, error) {
 	startTime := time.Now()
 	checksum := 0
 
