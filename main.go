@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/DianaSun97/AdventGolang/common"
 	"log"
 	"strconv"
 	"strings"
@@ -9,7 +10,7 @@ import (
 )
 
 func main() {
-	fileContent, err := ReadInputFile()
+	fileContent, err := common.ReadInputFile()
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -21,13 +22,8 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
+
 	fmt.Println("Total Checksum:", totalChecksum)
-}
-func ReadInputFile() (string, error) {
-	return "", nil
-}
-func RemoveEmptyStrings(lines []string) []string {
-	return lines
 }
 
 func calculateChecksum(chars []string) int {
@@ -61,4 +57,14 @@ func ComputeTotalChecksum(input []string) (int, error) {
 	log.Println("Checksum computation took:", time.Since(startTime))
 
 	return checksum, nil
+}
+
+func RemoveEmptyStrings(lines []string) []string {
+	var nonEmptyLines []string
+	for _, line := range lines {
+		if strings.TrimSpace(line) != "" {
+			nonEmptyLines = append(nonEmptyLines, line)
+		}
+	}
+	return nonEmptyLines
 }
