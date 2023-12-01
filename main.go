@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"github.com/DianaSun97/AdventGolang/common"
 	"log"
@@ -9,62 +10,57 @@ import (
 	"time"
 )
 
+func Solve(input string) (string, string) {
+
+	part2 := 0
+
+	scanner := bufio.NewScanner(strings.NewReader(input))
+	for scanner.Scan() {
+		line := scanner.Text()
+		if len(line) == 0 {
+			continue
+		}
+
+		{
+			lineAsBytes := []byte(line)
+
+			replace := func(lineAsBytes []byte, oldValue string, newValue byte) {
+				for {
+					index := strings.Index(string(lineAsBytes), oldValue)
+					if index < 0 {
+						return
+					}
+					lineAsBytes[index+(len(oldValue)/2)] = newValue
+					lineAsBytes = lineAsBytes[index+1:]
+				}
+			}
+
+			replace(lineAsBytes, "one", '1')
+			replace(lineAsBytes, "two", '2')
+			replace(lineAsBytes, "three", '3')
+			replace(lineAsBytes, "four", '4')
+			replace(lineAsBytes, "five", '5')
+			replace(lineAsBytes, "six", '6')
+			replace(lineAsBytes, "seven", '7')
+			replace(lineAsBytes, "eight", '8')
+			replace(lineAsBytes, "nine", '9')
+
+			tens := int(lineAsBytes[strings.IndexAny(string(lineAsBytes), "0123456789")]-'0') * 10
+			ones := int(lineAsBytes[strings.LastIndexAny(string(lineAsBytes), "0123456789")] - '0')
+			part2 += tens + ones
+		}
+	}
+
+	return strconv.Itoa(part2), ""
+}
+
 func main() {
+	t := time.Now()
 	fileContent, err := common.ReadInputFile()
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	lines := strings.Split(strings.Trim(fileContent, " "), "\n")
-	data := RemoveEmptyStrings(lines)
-
-	totalChecksum, err := TotalChecksum(data)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	fmt.Println("Total Checksum:", totalChecksum)
-}
-
-func calculateChecksum(chars []string) int {
-	digits := []int{}
-
-	for _, char := range chars {
-		digit, err := strconv.Atoi(char)
-		if err == nil {
-			digits = append(digits, digit)
-		}
-	}
-
-	if len(digits) == 0 {
-		return 0
-	}
-
-	firstDigit := digits[0]
-	lastDigit := digits[len(digits)-1]
-	return firstDigit*10 + lastDigit
-}
-
-func TotalChecksum(input []string) (int, error) {
-	startTime := time.Now()
-	checksum := 0
-
-	for _, line := range input {
-		characters := strings.Split(line, "")
-		checksum += calculateChecksum(characters)
-	}
-
-	log.Println("Checksum computation took:", time.Since(startTime))
-
-	return checksum, nil
-}
-
-func RemoveEmptyStrings(lines []string) []string {
-	var nonEmptyLines []string
-	for _, line := range lines {
-		if strings.TrimSpace(line) != "" {
-			nonEmptyLines = append(nonEmptyLines, line)
-		}
-	}
-	return nonEmptyLines
+	part2, _ := Solve(fileContent)
+	fmt.Println("Part 2:", part2, time.Since(t))
 }
