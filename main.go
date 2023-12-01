@@ -9,7 +9,6 @@ import (
 )
 
 func main() {
-	// Assuming you have a ReadInputFile function in your main package
 	fileContent, err := ReadInputFile()
 	if err != nil {
 		log.Fatalln(err)
