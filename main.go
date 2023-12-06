@@ -16,6 +16,10 @@ type Set struct {
 	blue  int
 }
 
+type Game struct {
+	rounds []Set
+}
+
 func parseSet(setStr string) *Set {
 	splits := strings.Split(setStr, ",")
 
@@ -43,33 +47,55 @@ func parseSet(setStr string) *Set {
 	return &Set{red: red, green: green, blue: blue}
 }
 
-func (s *Set) isValid(bag *Set) bool {
-	if s.red > bag.red {
+func (s *Set) isValid(validBag *Set) bool {
+	if s.red > validBag.red {
 		return false
-	} else if s.blue > bag.blue {
+	} else if s.blue > validBag.blue {
 		return false
-	} else if s.green > bag.green {
+	} else if s.green > validBag.green {
 		return false
+	}
+	return true
+}
+
+func parseGame(gameLine string) *Game {
+	sets := strings.Split(gameLine, ": ")
+	setsSplit := strings.Split(sets[1], ";")
+
+	rounds := make([]Set, len(setsSplit))
+	game := Game{rounds: rounds}
+
+	for idx, setStr := range setsSplit {
+		set := parseSet(setStr)
+		game.rounds[idx] = *set
+	}
+
+	return &game
+}
+
+func (g *Game) isValid(validBag *Set) bool {
+	for _, round := range g.rounds {
+		if !round.isValid(validBag) {
+			return false
+		}
 	}
 	return true
 }
 
 func main() {
 	fileContent, err := common.ReadInputFile()
-
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	reader := strings.NewReader(fileContent)
-	scanner := bufio.NewScanner(reader)
+	scanner := bufio.NewScanner(strings.NewReader(fileContent))
 	validBag := Set{red: 12, green: 13, blue: 14}
 	idSum := 0
 	gameNr := 1
 
 	for scanner.Scan() {
 		gameLine := scanner.Text()
-		game := parseSet(gameLine)
+		game := parseGame(gameLine)
 
 		if game.isValid(&validBag) {
 			idSum += gameNr
