@@ -3,64 +3,84 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"github.com/DianaSun97/AdventGolang/common"
 	"log"
 	"strconv"
 	"strings"
-	"time"
+
+	"github.com/DianaSun97/AdventGolang/common"
 )
 
-func Solve(input string) (string, string) {
+type Set struct {
+	red   int
+	green int
+	blue  int
+}
 
-	part2 := 0
+func parseSet(setStr string) *Set {
+	splits := strings.Split(setStr, ",")
 
-	scanner := bufio.NewScanner(strings.NewReader(input))
-	for scanner.Scan() {
-		line := scanner.Text()
-		if len(line) == 0 {
-			continue
+	red := 0
+	green := 0
+	blue := 0
+
+	for _, split := range splits {
+		splitDraw := strings.Split(strings.TrimSpace(split), " ")
+		number, err := strconv.Atoi(splitDraw[0])
+		if err != nil {
+			log.Fatalln("Unable to parse set", split)
 		}
+		color := splitDraw[1]
 
-		{
-			lineAsBytes := []byte(line)
-
-			replace := func(lineAsBytes []byte, oldValue string, newValue byte) {
-				for {
-					index := strings.Index(string(lineAsBytes), oldValue)
-					if index < 0 {
-						return
-					}
-					lineAsBytes[index+(len(oldValue)/2)] = newValue
-					lineAsBytes = lineAsBytes[index+1:]
-				}
-			}
-
-			replace(lineAsBytes, "one", '1')
-			replace(lineAsBytes, "two", '2')
-			replace(lineAsBytes, "three", '3')
-			replace(lineAsBytes, "four", '4')
-			replace(lineAsBytes, "five", '5')
-			replace(lineAsBytes, "six", '6')
-			replace(lineAsBytes, "seven", '7')
-			replace(lineAsBytes, "eight", '8')
-			replace(lineAsBytes, "nine", '9')
-
-			tens := int(lineAsBytes[strings.IndexAny(string(lineAsBytes), "0123456789")]-'0') * 10
-			ones := int(lineAsBytes[strings.LastIndexAny(string(lineAsBytes), "0123456789")] - '0')
-			part2 += tens + ones
+		if color == "red" {
+			red = number
+		} else if color == "green" {
+			green = number
+		} else if color == "blue" {
+			blue = number
 		}
 	}
 
-	return strconv.Itoa(part2), ""
+	return &Set{red: red, green: green, blue: blue}
+}
+
+func (s *Set) isValid(bag *Set) bool {
+	if s.red > bag.red {
+		return false
+	} else if s.blue > bag.blue {
+		return false
+	} else if s.green > bag.green {
+		return false
+	}
+	return true
 }
 
 func main() {
-	t := time.Now()
 	fileContent, err := common.ReadInputFile()
+
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	part2, _ := Solve(fileContent)
-	fmt.Println("Part 2:", part2, time.Since(t))
+	reader := strings.NewReader(fileContent)
+	scanner := bufio.NewScanner(reader)
+	validBag := Set{red: 12, green: 13, blue: 14}
+	idSum := 0
+	gameNr := 1
+
+	for scanner.Scan() {
+		gameLine := scanner.Text()
+		game := parseSet(gameLine)
+
+		if game.isValid(&validBag) {
+			idSum += gameNr
+		}
+
+		gameNr++
+	}
+
+	fmt.Println(idSum)
+
+	if err := scanner.Err(); err != nil {
+		log.Fatal(err)
+	}
 }
