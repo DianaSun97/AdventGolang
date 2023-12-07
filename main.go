@@ -1,19 +1,18 @@
 package main
 
 import (
-	_ "bufio"
 	"fmt"
 	"github.com/DianaSun97/AdventGolang/common"
 	"log"
+	"math"
 	"regexp"
 	"strconv"
 	"strings"
 )
 
-type Part struct {
-	Text string
-	Irow int
-	Icol int
+type Card struct {
+	WinningNumbers []int
+	YourNumbers    []int
 }
 
 func main() {
@@ -22,93 +21,61 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	rows := strings.Split(fileContent, "\n")
-	symbols := parse(rows, regexp.MustCompile(`[^.0-9]`))
-	nums := parse(rows, regexp.MustCompile(`\d+`))
-
-	partOneResult := 0
-	for _, n := range nums {
-		if hasAdjacentSymbol(symbols, n) {
-			numInt, err := strconv.Atoi(n.Text)
-			if err != nil {
-				log.Fatalf("Error converting string to int: %v", err)
-			}
-			partOneResult += numInt
+	lines := strings.Split(fileContent, "\n")
+	totalPoints := 0
+	for i, line := range lines {
+		if i+1 < len(lines) {
+			card := parseCard(line)
+			points := calculatePoints(card)
+			totalPoints += points
+			fmt.Printf("Card %d: %d points\n", i+1, points)
 		}
 	}
 
-	fmt.Println("Part One:", partOneResult)
-
-	gears := parse(rows, regexp.MustCompile(`\*`))
-	numbers := parse(rows, regexp.MustCompile(`\d+`))
-
-	partTwoResult := 0
-	for _, g := range gears {
-		neighbours := getAdjacentNumbers(numbers, []Part{g})
-
-		if len(neighbours) == 2 {
-			num1, err := strconv.Atoi(neighbours[0].Text)
-			if err != nil {
-				log.Fatalf("Error converting string to int: %v", err)
-			}
-
-			num2, err := strconv.Atoi(neighbours[1].Text)
-			if err != nil {
-				log.Fatalf("Error converting string to int: %v", err)
-			}
-
-			partTwoResult += num1 * num2
-		}
-	}
-
-	fmt.Println("Part Two:", partTwoResult)
+	fmt.Printf("Total Points: %d\n", totalPoints)
 }
 
-func parse(rows []string, rx *regexp.Regexp) []Part {
-	var result []Part
-	for irow := 0; irow < len(rows); irow++ {
-		matches := rx.FindAllStringIndex(rows[irow], -1)
-		for _, match := range matches {
-			result = append(result, Part{
-				Text: rows[irow][match[0]:match[1]],
-				Irow: irow,
-				Icol: match[0],
-			})
-		}
+func parseCard(line string) Card {
+	parts := strings.Split(line, "|")
+	if len(parts) != 2 {
+		log.Fatalf("Invalid input line: %s", line)
 	}
-	return result
+	return Card{
+		WinningNumbers: extractNumbers(parts[0]),
+		YourNumbers:    extractNumbers(parts[1]),
+	}
 }
 
-func hasAdjacentSymbol(symbols []Part, num Part) bool {
-	for _, s := range symbols {
-		if isAdjacent(s, num) {
+func extractNumbers(s string) []int {
+	re := regexp.MustCompile(`\d+`)
+	matches := re.FindAllString(s, -1)
+	numbers := make([]int, len(matches))
+	for i, match := range matches {
+		num, err := strconv.Atoi(match)
+		if err != nil {
+			log.Fatalf("Error converting string to int: %v", err)
+		}
+		numbers[i] = num
+	}
+	return numbers
+}
+
+func calculatePoints(card Card) int {
+	points := 0
+	for _, winningNumber := range card.WinningNumbers {
+		if contains(card.YourNumbers, winningNumber) {
+			points++
+		}
+	}
+
+	return int(math.Pow(2, float64(points-1)))
+}
+
+func contains(numbers []int, target int) bool {
+	for _, num := range numbers {
+		if num == target {
 			return true
 		}
 	}
 	return false
-}
-
-func isAdjacent(p1, p2 Part) bool {
-	return abs(p2.Irow-p1.Irow) <= 1 &&
-		p1.Icol <= p2.Icol+len(p2.Text) &&
-		p2.Icol <= p1.Icol+len(p1.Text)
-}
-
-func getAdjacentNumbers(numbers, gears []Part) []Part {
-	var result []Part
-	for _, g := range gears {
-		for _, n := range numbers {
-			if isAdjacent(n, g) {
-				result = append(result, n)
-			}
-		}
-	}
-	return result
-}
-
-func abs(x int) int {
-	if x < 0 {
-		return -x
-	}
-	return x
 }
