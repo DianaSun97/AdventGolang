@@ -1,4 +1,4 @@
-package Day_1_Trebuchet__
+package legacy
 
 import (
 	"fmt"

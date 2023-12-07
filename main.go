@@ -1,85 +1,19 @@
 package main
 
 import (
-	"bufio"
+	_ "bufio"
 	"fmt"
+	"github.com/DianaSun97/AdventGolang/common"
 	"log"
+	"regexp"
 	"strconv"
 	"strings"
-
-	"github.com/DianaSun97/AdventGolang/common"
 )
 
-type Set struct {
-	red   int
-	green int
-	blue  int
-}
-
-type Game struct {
-	rounds []Set
-}
-
-func parseSet(setStr string) *Set {
-	splits := strings.Split(setStr, ",")
-
-	red := 0
-	green := 0
-	blue := 0
-
-	for _, split := range splits {
-		splitDraw := strings.Split(strings.TrimSpace(split), " ")
-		number, err := strconv.Atoi(splitDraw[0])
-		if err != nil {
-			log.Fatalln("Unable to parse set", split)
-		}
-		color := splitDraw[1]
-
-		if color == "red" {
-			red = number
-		} else if color == "green" {
-			green = number
-		} else if color == "blue" {
-			blue = number
-		}
-	}
-
-	return &Set{red: red, green: green, blue: blue}
-}
-
-func (s *Set) isValid(validBag *Set) bool {
-	if s.red > validBag.red {
-		return false
-	} else if s.blue > validBag.blue {
-		return false
-	} else if s.green > validBag.green {
-		return false
-	}
-	return true
-}
-
-func parseGame(gameLine string) *Game {
-	sets := strings.Split(gameLine, ": ")
-	setsSplit := strings.Split(sets[1], ";")
-
-	rounds := make([]Set, len(setsSplit))
-	game := Game{rounds: rounds}
-
-	for idx, setStr := range setsSplit {
-		set := parseSet(setStr)
-		game.rounds[idx] = *set
-	}
-
-	return &game
-}
-
-func (g *Game) isValid(validBag *Set) bool {
-	for _, round := range g.rounds {
-		if !round.isValid(validBag) {
-			return false
-		}
-	}
-	return true
+type Part struct {
+	Text string
+	Irow int
+	Icol int
 }
 
 func main() {
@@ -88,25 +22,93 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	scanner := bufio.NewScanner(strings.NewReader(fileContent))
-	validBag := Set{red: 12, green: 13, blue: 14}
-	idSum := 0
-	gameNr := 1
+	rows := strings.Split(fileContent, "\n")
+	symbols := parse(rows, regexp.MustCompile(`[^.0-9]`))
+	nums := parse(rows, regexp.MustCompile(`\d+`))
 
-	for scanner.Scan() {
-		gameLine := scanner.Text()
-		game := parseGame(gameLine)
-
-		if game.isValid(&validBag) {
-			idSum += gameNr
+	partOneResult := 0
+	for _, n := range nums {
+		if hasAdjacentSymbol(symbols, n) {
+			numInt, err := strconv.Atoi(n.Text)
+			if err != nil {
+				log.Fatalf("Error converting string to int: %v", err)
+			}
+			partOneResult += numInt
 		}
-
-		gameNr++
 	}
 
-	fmt.Println(idSum)
+	fmt.Println("Part One:", partOneResult)
 
-	if err := scanner.Err(); err != nil {
-		log.Fatal(err)
+	gears := parse(rows, regexp.MustCompile(`\*`))
+	numbers := parse(rows, regexp.MustCompile(`\d+`))
+
+	partTwoResult := 0
+	for _, g := range gears {
+		neighbours := getAdjacentNumbers(numbers, []Part{g})
+
+		if len(neighbours) == 2 {
+			num1, err := strconv.Atoi(neighbours[0].Text)
+			if err != nil {
+				log.Fatalf("Error converting string to int: %v", err)
+			}
+
+			num2, err := strconv.Atoi(neighbours[1].Text)
+			if err != nil {
+				log.Fatalf("Error converting string to int: %v", err)
+			}
+
+			partTwoResult += num1 * num2
+		}
 	}
+
+	fmt.Println("Part Two:", partTwoResult)
+}
+
+func parse(rows []string, rx *regexp.Regexp) []Part {
+	var result []Part
+	for irow := 0; irow < len(rows); irow++ {
+		matches := rx.FindAllStringIndex(rows[irow], -1)
+		for _, match := range matches {
+			result = append(result, Part{
+				Text: rows[irow][match[0]:match[1]],
+				Irow: irow,
+				Icol: match[0],
+			})
+		}
+	}
+	return result
+}
+
+func hasAdjacentSymbol(symbols []Part, num Part) bool {
+	for _, s := range symbols {
+		if isAdjacent(s, num) {
+			return true
+		}
+	}
+	return false
+}
+
+func isAdjacent(p1, p2 Part) bool {
+	return abs(p2.Irow-p1.Irow) <= 1 &&
+		p1.Icol <= p2.Icol+len(p2.Text) &&
+		p2.Icol <= p1.Icol+len(p1.Text)
+}
+
+func getAdjacentNumbers(numbers, gears []Part) []Part {
+	var result []Part
+	for _, g := range gears {
+		for _, n := range numbers {
+			if isAdjacent(n, g) {
+				result = append(result, n)
+			}
+		}
+	}
+	return result
+}
+
+func abs(x int) int {
+	if x < 0 {
+		return -x
+	}
+	return x
 }
