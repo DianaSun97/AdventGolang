@@ -68,7 +68,7 @@ func calculatePoints(card Card) int {
 		}
 	}
 
-	return int(math.Pow(2, float64(points-1)))
+	return int(math.Pow(2, float64(points)))
 }
 
 func contains(numbers []int, target int) bool {
