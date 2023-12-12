@@ -1,4 +1,4 @@
-package legacy
+package _legacy
 
 import (
 	"fmt"
