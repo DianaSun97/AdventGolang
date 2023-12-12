@@ -1,4 +1,4 @@
-package main
+package _legacy
 
 import (
 	_ "embed"
