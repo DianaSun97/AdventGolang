@@ -2,12 +2,13 @@ package main
 
 import (
 	"fmt"
+	"github.com/DianaSun97/AdventGolang/common"
 	"slices"
 	"strconv"
 	"strings"
 )
 
-var input string
+var input, _ = common.ReadInputFile()
 
 var kind = []string{"H", "1P", "2P", "3", "F", "4", "5"}
 var cards = []string{"J", "2", "3", "4", "5", "6", "7", "8", "9", "T", "Q", "K", "A"}
