@@ -1,4 +1,4 @@
-package main
+package _legacy
 
 import (
 	_ "embed"
@@ -30,18 +30,18 @@ func main() {
 		sum += next
 	}
 
-	fmt.Println("Part 2 =", sum)
+	fmt.Println("Part 1 =", sum)
 }
 
 func extrapolateNextValue(tower [][]int) int {
 	lastLine := len(tower) - 1
-	tower[lastLine] = append([]int{0}, tower[lastLine]...)
+	tower[lastLine] = append(tower[lastLine], 0)
 	for i := len(tower) - 2; i >= 0; i-- {
-		newVal := tower[i][0] - tower[i+1][0]
-		tower[i] = append([]int{newVal}, tower[i]...)
+		idx := len(tower[i]) - 1
+		tower[i] = append(tower[i], tower[i+1][idx]+tower[i][idx])
 	}
 
-	return tower[0][0]
+	return tower[0][len(tower[0])-1]
 }
 
 func generateTower(num []int) [][]int {
